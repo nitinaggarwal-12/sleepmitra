@@ -3,3 +3,7 @@ pandas>=2.0.0
 numpy>=1.21.0
 plotly>=5.0.0
 requests>=2.25.0
+openai>=1.0.0
+speechrecognition>=3.10.0
+pyttsx3>=2.90
+pyaudio>=0.2.11

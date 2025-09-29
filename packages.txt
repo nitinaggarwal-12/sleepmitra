@@ -1,2 +1,0 @@
-# System packages (if needed)
-# Currently no system packages required for SleepMitra

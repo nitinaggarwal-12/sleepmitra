@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>नींद साथी - SleepMitra</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">🌙</span>
+                <span class="logo-text">नींद साथी</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#" class="nav-link active" data-page="dashboard">डैशबोर्ड</a>
+                <a href="#" class="nav-link" data-page="diary">नींद डायरी</a>
+                <a href="#" class="nav-link" data-page="assessment">आकलन</a>
+                <a href="#" class="nav-link" data-page="booking">अपॉइंटमेंट</a>
+                <a href="#" class="nav-link" data-page="analytics">विश्लेषण</a>
+                <a href="#" class="nav-link" data-page="therapy">चिकित्सा</a>
+            </div>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard Page -->
+        <div id="dashboard" class="page active">
+            <div class="page-header">
+                <h1>नमस्ते! 👋</h1>
+                <p>आज आपकी नींद की गुणवत्ता कैसी रही? अपने डैशबोर्ड पर एक नज़र डालें।</p>
+            </div>
+
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <h3>नींद दक्षता</h3>
+                        <span class="kpi-value">87%</span>
+                    </div>
+                    <div class="kpi-chart">
+                        <canvas id="efficiencyChart"></canvas>
+                    </div>
+                    <div class="kpi-delta positive">↗ +5.2%</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <h3>सोने की देरी</h3>
+                        <span class="kpi-value">12 मिनट</span>
+                    </div>
+                    <div class="kpi-chart">
+                        <canvas id="latencyChart"></canvas>
+                    </div>
+                    <div class="kpi-delta negative">↘ -8.5%</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <h3>नींद अवधि</h3>
+                        <span class="kpi-value">7.5 घंटे</span>
+                    </div>
+                    <div class="kpi-chart">
+                        <canvas id="durationChart"></canvas>
+                    </div>
+                    <div class="kpi-delta positive">↗ +2.1%</div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <h3>जागने की संख्या</h3>
+                        <span class="kpi-value">1.2</span>
+                    </div>
+                    <div class="kpi-chart">
+                        <canvas id="wakeupsChart"></canvas>
+                    </div>
+                    <div class="kpi-delta negative">↘ -15.3%</div>
+                </div>
+            </div>
+
+            <div class="quick-actions">
+                <div class="action-card">
+                    <h3>नींद डायरी</h3>
+                    <p>अपनी आज की नींद की गुणवत्ता रिकॉर्ड करें</p>
+                    <button class="btn btn-primary" onclick="showPage('diary')">आज की एंट्री जोड़ें</button>
+                </div>
+                <div class="action-card">
+                    <h3>नींद आकलन</h3>
+                    <p>ISI, ESS और PHQ-2 टेस्ट लें</p>
+                    <button class="btn btn-secondary" onclick="showPage('assessment')">आकलन शुरू करें</button>
+                </div>
+                <div class="action-card">
+                    <h3>विशेषज्ञ से मिलें</h3>
+                    <p>नींद विशेषज्ञ के साथ अपॉइंटमेंट बुक करें</p>
+                    <button class="btn btn-outline" onclick="showPage('booking')">अपॉइंटमेंट बुक करें</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sleep Diary Page -->
+        <div id="diary" class="page">
+            <div class="page-header">
+                <h1>नींद डायरी</h1>
+                <p>अपनी नींद की गुणवत्ता का दैनिक रिकॉर्ड रखें</p>
+            </div>
+
+            <div class="diary-form">
+                <div class="form-group">
+                    <label>आज की तारीख</label>
+                    <input type="date" id="sleepDate" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label>सोने का समय</label>
+                    <input type="time" id="bedtime" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label>सोने में लगा समय (मिनट)</label>
+                    <input type="number" id="sleepLatency" class="form-input" placeholder="उदाहरण: 15">
+                </div>
+
+                <div class="form-group">
+                    <label>जागने का समय</label>
+                    <input type="time" id="wakeTime" class="form-input">
+                </div>
+
+                <div class="form-group">
+                    <label>रात में जागने की संख्या</label>
+                    <input type="number" id="wakeUps" class="form-input" placeholder="उदाहरण: 2">
+                </div>
+
+                <div class="form-group">
+                    <label>नींद की गुणवत्ता (1-10)</label>
+                    <input type="range" id="sleepQuality" min="1" max="10" value="7" class="form-range">
+                    <div class="range-labels">
+                        <span>बहुत खराब</span>
+                        <span>बहुत अच्छी</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>टिप्पणी</label>
+                    <textarea id="notes" class="form-textarea" placeholder="आज की नींद के बारे में कुछ नोट्स..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="saveDiaryEntry()">सेव करें</button>
+            </div>
+
+            <div class="diary-history">
+                <h3>पिछली एंट्रीज</h3>
+                <div id="diaryEntries" class="entries-list">
+                    <!-- Diary entries will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Assessment Page -->
+        <div id="assessment" class="page">
+            <div class="page-header">
+                <h1>नींद आकलन</h1>
+                <p>अपनी नींद की गुणवत्ता का पूर्ण आकलन करें और व्यक्तिगत सुझाव प्राप्त करें</p>
+            </div>
+
+            <div class="assessment-container">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="assessmentProgress"></div>
+                </div>
+                <div class="progress-text" id="progressText">चरण 1 / 3</div>
+
+                <div class="assessment-step active" id="step1">
+                    <h3>इनसोम्निया सीविटी इंडेक्स (ISI)</h3>
+                    <p>यह आकलन आपकी नींद की समस्याओं की गंभीरता को मापता है।</p>
+                    
+                    <div class="question-group">
+                        <h4>1. पिछले 2 सप्ताह में आपको सोने में कितनी कठिनाई हुई है?</h4>
+                        <div class="options">
+                            <label><input type="radio" name="q1" value="0"> कोई कठिनाई नहीं</label>
+                            <label><input type="radio" name="q1" value="1"> थोड़ी कठिनाई</label>
+                            <label><input type="radio" name="q1" value="2"> कुछ कठिनाई</label>
+                            <label><input type="radio" name="q1" value="3"> काफी कठिनाई</label>
+                            <label><input type="radio" name="q1" value="4"> बहुत कठिनाई</label>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <h4>2. पिछले 2 सप्ताह में आपको रात में जागने में कितनी कठिनाई हुई है?</h4>
+                        <div class="options">
+                            <label><input type="radio" name="q2" value="0"> कोई समस्या नहीं</label>
+                            <label><input type="radio" name="q2" value="1"> थोड़ी समस्या</label>
+                            <label><input type="radio" name="q2" value="2"> कुछ समस्या</label>
+                            <label><input type="radio" name="q2" value="3"> काफी समस्या</label>
+                            <label><input type="radio" name="q2" value="4"> बहुत समस्या</label>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <h4>3. पिछले 2 सप्ताह में आपको जल्दी उठने में कितनी कठिनाई हुई है?</h4>
+                        <div class="options">
+                            <label><input type="radio" name="q3" value="0"> कोई कठिनाई नहीं</label>
+                            <label><input type="radio" name="q3" value="1"> थोड़ी कठिनाई</label>
+                            <label><input type="radio" name="q3" value="2"> कुछ कठिनाई</label>
+                            <label><input type="radio" name="q3" value="3"> काफी कठिनाई</label>
+                            <label><input type="radio" name="q3" value="4"> बहुत कठिनाई</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="assessment-step" id="step2">
+                    <h3>एपवर्थ स्लीपनेस स्केल (ESS)</h3>
+                    <p>यह आकलन दिन के समय नींद आने की संभावना को मापता है।</p>
+                    
+                    <div class="question-group">
+                        <h4>1. बैठकर पढ़ते समय नींद आने की संभावना</h4>
+                        <div class="options">
+                            <label><input type="radio" name="q4" value="0"> कभी नहीं</label>
+                            <label><input type="radio" name="q4" value="1"> कम संभावना</label>
+                            <label><input type="radio" name="q4" value="2"> मध्यम संभावना</label>
+                            <label><input type="radio" name="q4" value="3"> उच्च संभावना</label>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <h4>2. टीवी देखते समय नींद आने की संभावना</h4>
+                        <div class="options">
+                            <label><input type="radio" name="q4" value="0"> कभी नहीं</label>
+                            <label><input type="radio" name="q4" value="1"> कम संभावना</label>
+                            <label><input type="radio" name="q4" value="2"> मध्यम संभावना</label>
+                            <label><input type="radio" name="q4" value="3"> उच्च संभावना</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="assessment-step" id="step3">
+                    <h3>PHQ-2 डिप्रेशन स्क्रीनिंग</h3>
+                    <p>यह आकलन अवसाद के लक्षणों की जांच करता है।</p>
+                    
+                    <div class="question-group">
+                        <h4>1. पिछले 2 सप्ताह में आपको कितनी बार उदासी या निराशा महसूस हुई है?</h4>
+                        <div class="options">
+                            <label><input type="radio" name="q5" value="0"> बिल्कुल नहीं</label>
+                            <label><input type="radio" name="q5" value="1"> कई दिन</label>
+                            <label><input type="radio" name="q5" value="2"> आधे से अधिक दिन</label>
+                            <label><input type="radio" name="q5" value="3"> लगभग हर दिन</label>
+                        </div>
+                    </div>
+
+                    <div class="question-group">
+                        <h4>2. पिछले 2 सप्ताह में आपको कितनी बार कम रुचि या खुशी महसूस हुई है?</h4>
+                        <div class="options">
+                            <label><input type="radio" name="q6" value="0"> बिल्कुल नहीं</label>
+                            <label><input type="radio" name="q6" value="1"> कई दिन</label>
+                            <label><input type="radio" name="q6" value="2"> आधे से अधिक दिन</label>
+                            <label><input type="radio" name="q6" value="3"> लगभग हर दिन</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="assessment-navigation">
+                    <button class="btn btn-outline" id="prevBtn" onclick="previousStep()" style="display: none;">पिछला</button>
+                    <button class="btn btn-primary" id="nextBtn" onclick="nextStep()">अगला</button>
+                </div>
+            </div>
+
+            <!-- Results Modal -->
+            <div id="resultsModal" class="modal">
+                <div class="modal-content">
+                    <h2>आकलन परिणाम</h2>
+                    <div class="result-score">
+                        <div class="score-circle">
+                            <span id="totalScore">0</span>
+                        </div>
+                        <div class="severity-badge" id="severityBadge">हल्का</div>
+                    </div>
+                    <div class="result-recommendations">
+                        <h3>सुझाव:</h3>
+                        <p id="recommendations">आपकी नींद की गुणवत्ता अच्छी है। नियमित दिनचर्या बनाए रखें।</p>
+                    </div>
+                    <button class="btn btn-primary" onclick="closeResults()">समझ गया</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Page -->
+        <div id="booking" class="page">
+            <div class="page-header">
+                <h1>अपॉइंटमेंट बुकिंग</h1>
+                <p>नींद विशेषज्ञ के साथ अपॉइंटमेंट बुक करें। टेलीकंसल्टेशन या क्लिनिक विजिट चुनें।</p>
+            </div>
+
+            <div class="doctor-profile">
+                <div class="doctor-info">
+                    <div class="doctor-avatar">👩‍⚕️</div>
+                    <div class="doctor-details">
+                        <h3>डॉ. प्रिया शर्मा</h3>
+                        <p>नींद चिकित्सा विशेषज्ञ</p>
+                        <div class="doctor-rating">⭐ 4.8 (8 वर्ष का अनुभव)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="booking-calendar">
+                <h3>उपलब्ध समय स्लॉट</h3>
+                <div class="week-grid">
+                    <div class="day-column">
+                        <div class="day-header">सोम</div>
+                        <div class="day-date">15 जन</div>
+                        <div class="time-slots">
+                            <button class="time-slot available" data-time="09:00" data-type="tele">9:00 AM 📹</button>
+                            <button class="time-slot available" data-time="10:00" data-type="clinic">10:00 AM 🏥</button>
+                            <button class="time-slot unavailable">11:00 AM</button>
+                            <button class="time-slot available" data-time="14:00" data-type="clinic">2:00 PM 🏥</button>
+                        </div>
+                    </div>
+                    <div class="day-column">
+                        <div class="day-header">मंगल</div>
+                        <div class="day-date">16 जन</div>
+                        <div class="time-slots">
+                            <button class="time-slot available" data-time="09:00" data-type="clinic">9:00 AM 🏥</button>
+                            <button class="time-slot available" data-time="10:00" data-type="tele">10:00 AM 📹</button>
+                            <button class="time-slot available" data-time="11:00" data-type="clinic">11:00 AM 🏥</button>
+                            <button class="time-slot unavailable">2:00 PM</button>
+                        </div>
+                    </div>
+                    <div class="day-column">
+                        <div class="day-header">बुध</div>
+                        <div class="day-date">17 जन</div>
+                        <div class="time-slots">
+                            <button class="time-slot available" data-time="09:00" data-type="tele">9:00 AM 📹</button>
+                            <button class="time-slot unavailable">10:00 AM</button>
+                            <button class="time-slot available" data-time="11:00" data-type="tele">11:00 AM 📹</button>
+                            <button class="time-slot available" data-time="14:00" data-type="clinic">2:00 PM 🏥</button>
+                        </div>
+                    </div>
+                    <div class="day-column">
+                        <div class="day-header">गुरु</div>
+                        <div class="day-date">18 जन</div>
+                        <div class="time-slots">
+                            <button class="time-slot available" data-time="09:00" data-type="clinic">9:00 AM 🏥</button>
+                            <button class="time-slot available" data-time="10:00" data-type="tele">10:00 AM 📹</button>
+                            <button class="time-slot available" data-time="11:00" data-type="clinic">11:00 AM 🏥</button>
+                            <button class="time-slot available" data-time="14:00" data-type="tele">2:00 PM 📹</button>
+                        </div>
+                    </div>
+                    <div class="day-column">
+                        <div class="day-header">शुक्र</div>
+                        <div class="day-date">19 जन</div>
+                        <div class="time-slots">
+                            <button class="time-slot available" data-time="09:00" data-type="tele">9:00 AM 📹</button>
+                            <button class="time-slot available" data-time="10:00" data-type="clinic">10:00 AM 🏥</button>
+                            <button class="time-slot available" data-time="11:00" data-type="tele">11:00 AM 📹</button>
+                            <button class="time-slot available" data-time="14:00" data-type="clinic">2:00 PM 🏥</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Booking Modal -->
+            <div id="bookingModal" class="modal">
+                <div class="modal-content">
+                    <h2>अपॉइंटमेंट विवरण</h2>
+                    <div class="booking-details">
+                        <div class="detail-item">
+                            <strong>डॉक्टर:</strong> डॉ. प्रिया शर्मा
+                        </div>
+                        <div class="detail-item">
+                            <strong>तारीख:</strong> <span id="selectedDate"></span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>समय:</strong> <span id="selectedTime"></span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>प्रकार:</strong> <span id="selectedType"></span>
+                        </div>
+                    </div>
+                    <div class="booking-actions">
+                        <button class="btn btn-outline" onclick="closeBookingModal()">रद्द करें</button>
+                        <button class="btn btn-primary" onclick="confirmBooking()">बुकिंग पुष्टि करें</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Modal -->
+            <div id="successModal" class="modal">
+                <div class="modal-content">
+                    <div class="success-icon">✅</div>
+                    <h2>बुकिंग सफल!</h2>
+                    <p>आपकी अपॉइंटमेंट सफलतापूर्वक बुक हो गई है।<br>कैलेंडर इनवाइट जल्द ही भेजा जाएगा।</p>
+                    <button class="btn btn-primary" onclick="closeSuccessModal()">ठीक है</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Page -->
+        <div id="analytics" class="page">
+            <div class="page-header">
+                <h1>नींद विश्लेषण</h1>
+                <p>अपनी नींद के पैटर्न और रुझानों का विस्तृत विश्लेषण देखें</p>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="chart-container">
+                    <h3>नींद की अवधि (घंटे)</h3>
+                    <canvas id="sleepDurationChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3>नींद दक्षता (%)</h3>
+                    <canvas id="sleepEfficiencyChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3>रात में जागने की संख्या</h3>
+                    <canvas id="wakeupsAnalyticsChart"></canvas>
+                </div>
+
+                <div class="chart-container">
+                    <h3>साप्ताहिक रुझान</h3>
+                    <canvas id="weeklyTrendsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="insights-section">
+                <h3>अंतर्दृष्टि और सुझाव</h3>
+                <div class="insights-grid">
+                    <div class="insight-card positive">
+                        <h4>सकारात्मक रुझान</h4>
+                        <p>पिछले सप्ताह में आपकी नींद की गुणवत्ता में सुधार हुआ है। औसत नींद की अवधि 7.8 घंटे है।</p>
+                    </div>
+                    <div class="insight-card warning">
+                        <h4>सुधार की आवश्यकता</h4>
+                        <p>रात में जागने की संख्या को कम करने के लिए नियमित दिनचर्या बनाए रखें।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Therapy Page -->
+        <div id="therapy" class="page">
+            <div class="page-header">
+                <h1>चिकित्सा सुझाव</h1>
+                <p>आपके आकलन परिणामों के आधार पर व्यक्तिगत चिकित्सा सुझाव और उपचार वीडियो</p>
+            </div>
+
+            <div class="therapy-container">
+                <!-- Assessment Results Summary -->
+                <div class="assessment-summary">
+                    <h3>आपके आकलन परिणाम</h3>
+                    <div class="result-card" id="therapyResultCard">
+                        <div class="result-info">
+                            <div class="score-display">
+                                <span class="score-label">ISI स्कोर:</span>
+                                <span class="score-value" id="therapyScore">0</span>
+                            </div>
+                            <div class="severity-display">
+                                <span class="severity-label">गंभीरता:</span>
+                                <span class="severity-value" id="therapySeverity">हल्का</span>
+                            </div>
+                        </div>
+                        <div class="recommendation-text" id="therapyRecommendation">
+                            आपकी नींद की गुणवत्ता अच्छी है। नियमित दिनचर्या बनाए रखें।
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Therapy Modules -->
+                <div class="therapy-modules">
+                    <h3>अनुशंसित चिकित्सा मॉड्यूल</h3>
+                    
+                    <!-- CBT-I Module -->
+                    <div class="therapy-module">
+                        <div class="module-header">
+                            <h4>🧠 CBT-I (संज्ञानात्मक व्यवहार चिकित्सा)</h4>
+                            <span class="module-badge primary">अत्यधिक अनुशंसित</span>
+                        </div>
+                        <p>CBT-I नींद की समस्याओं के लिए सबसे प्रभावी उपचार है। यह दवा के बिना नींद की गुणवत्ता में सुधार करता है।</p>
+                        <div class="video-links">
+                            <h5>शैक्षिक वीडियो:</h5>
+                            <div class="video-grid">
+                                <a href="https://www.youtube.com/watch?v=GyxqKoQAxTk" target="_blank" class="video-link">
+                                    <div class="video-thumbnail">📹</div>
+                                    <div class="video-info">
+                                        <h6>CBT-I का परिचय</h6>
+                                        <p>नींद चिकित्सा की मूल बातें</p>
+                                    </div>
+                                </a>
+                                <a href="https://www.youtube.com/watch?v=DdtHsaZ_Xp4" target="_blank" class="video-link">
+                                    <div class="video-thumbnail">📹</div>
+                                    <div class="video-info">
+                                        <h6>नींद प्रतिबंध तकनीक</h6>
+                                        <p>सोने के समय को नियंत्रित करना</p>
+                                    </div>
+                                </a>
+                                <a href="https://www.youtube.com/watch?v=s2dQPI9ZPO0" target="_blank" class="video-link">
+                                    <div class="video-thumbnail">📹</div>
+                                    <div class="video-info">
+                                        <h6>नींद स्वच्छता</h6>
+                                        <p>अच्छी नींद के लिए आदतें</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Relaxation Techniques -->
+                    <div class="therapy-module">
+                        <div class="module-header">
+                            <h4>🧘‍♀️ रिलैक्सेशन तकनीकें</h4>
+                            <span class="module-badge secondary">अनुशंसित</span>
+                        </div>
+                        <p>तनाव कम करने और नींद में सुधार के लिए विभिन्न रिलैक्सेशन तकनीकें सीखें।</p>
+                        <div class="video-links">
+                            <h5>रिलैक्सेशन वीडियो:</h5>
+                            <div class="video-grid">
+                                <a href="https://www.youtube.com/watch?v=STPuP0kUnTo" target="_blank" class="video-link">
+                                    <div class="video-thumbnail">📹</div>
+                                    <div class="video-info">
+                                        <h6>प्रगतिशील मांसपेशी रिलैक्सेशन</h6>
+                                        <p>शरीर को आराम देने की तकनीक</p>
+                                    </div>
+                                </a>
+                                <a href="https://www.youtube.com/watch?v=kQUae5zodJ8" target="_blank" class="video-link">
+                                    <div class="video-thumbnail">📹</div>
+                                    <div class="video-info">
+                                        <h6>गहरी सांस लेने की तकनीक</h6>
+                                        <p>तनाव कम करने के लिए सांस लेने के व्यायाम</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sleep Hygiene -->
+                    <div class="therapy-module">
+                        <div class="module-header">
+                            <h4>🌙 नींद स्वच्छता</h4>
+                            <span class="module-badge accent">सभी के लिए</span>
+                        </div>
+                        <p>अच्छी नींद के लिए आवश्यक आदतें और वातावरण बनाने के तरीके।</p>
+                        <div class="video-links">
+                            <h5>नींद स्वच्छता वीडियो:</h5>
+                            <div class="video-grid">
+                                <a href="https://www.youtube.com/watch?v=dxsR_l5bu7w" target="_blank" class="video-link">
+                                    <div class="video-thumbnail">📹</div>
+                                    <div class="video-info">
+                                        <h6>बेडरूम का वातावरण</h6>
+                                        <p>नींद के लिए आदर्श वातावरण बनाना</p>
+                                    </div>
+                                </a>
+                                <a href="https://www.youtube.com/watch?v=KVfDhbFRfy0" target="_blank" class="video-link">
+                                    <div class="video-thumbnail">📹</div>
+                                    <div class="video-info">
+                                        <h6>दिनचर्या और नींद</h6>
+                                        <p>नियमित दिनचर्या का महत्व</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Techniques -->
+                    <div class="therapy-module">
+                        <div class="module-header">
+                            <h4>🎯 उन्नत तकनीकें</h4>
+                            <span class="module-badge warning">अनुभवी उपयोगकर्ता</span>
+                        </div>
+                        <p>गंभीर नींद की समस्याओं के लिए उन्नत चिकित्सा तकनीकें।</p>
+                        <div class="video-links">
+                            <h5>उन्नत तकनीक वीडियो:</h5>
+                            <div class="video-grid">
+                                <a href="https://www.youtube.com/watch?v=SclJBsQYI_Q" target="_blank" class="video-link">
+                                    <div class="video-thumbnail">📹</div>
+                                    <div class="video-info">
+                                        <h6>संज्ञानात्मक पुनर्गठन</h6>
+                                        <p>नींद के बारे में नकारात्मक विचारों को बदलना</p>
+                                    </div>
+                                </a>
+                                <a href="https://www.youtube.com/watch?v=7okjM6Tq14E" target="_blank" class="video-link">
+                                    <div class="video-thumbnail">📹</div>
+                                    <div class="video-info">
+                                        <h6>नींद प्रतिबंध चिकित्सा</h6>
+                                        <p>नींद की दक्षता बढ़ाने की तकनीक</p>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Tracking -->
+                <div class="therapy-progress">
+                    <h3>चिकित्सा प्रगति</h3>
+                    <div class="progress-card">
+                        <div class="progress-stats">
+                            <div class="stat-item">
+                                <span class="stat-number" id="videosWatched">0</span>
+                                <span class="stat-label">वीडियो देखे गए</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="daysActive">0</span>
+                                <span class="stat-label">सक्रिय दिन</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-number" id="techniquesLearned">0</span>
+                                <span class="stat-label">तकनीकें सीखीं</span>
+                            </div>
+                        </div>
+                        <div class="progress-actions">
+                            <button class="btn btn-primary" onclick="startTherapySession()">चिकित्सा सत्र शुरू करें</button>
+                            <button class="btn btn-outline" onclick="downloadTherapyPlan()">चिकित्सा योजना डाउनलोड करें</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Therapy Schedule -->
+                <div class="therapy-schedule">
+                    <h3>चिकित्सा कार्यक्रम</h3>
+                    <div class="schedule-card">
+                        <div class="schedule-week">
+                            <h4>सप्ताह 1: नींद स्वच्छता</h4>
+                            <ul>
+                                <li>✅ नियमित सोने का समय निर्धारित करें</li>
+                                <li>✅ बेडरूम को ठंडा और अंधेरा रखें</li>
+                                <li>⏳ सोने से 1 घंटे पहले स्क्रीन से दूर रहें</li>
+                                <li>⏳ कैफीन का सेवन कम करें</li>
+                            </ul>
+                        </div>
+                        <div class="schedule-week">
+                            <h4>सप्ताह 2: रिलैक्सेशन तकनीकें</h4>
+                            <ul>
+                                <li>⏳ प्रगतिशील मांसपेशी रिलैक्सेशन सीखें</li>
+                                <li>⏳ गहरी सांस लेने की तकनीक अभ्यास करें</li>
+                                <li>⏳ मेडिटेशन शुरू करें</li>
+                                <li>⏳ सोने से पहले रिलैक्सेशन रूटीन बनाएं</li>
+                            </ul>
+                        </div>
+                        <div class="schedule-week">
+                            <h4>सप्ताह 3-4: CBT-I तकनीकें</h4>
+                            <ul>
+                                <li>⏳ नींद प्रतिबंध तकनीक सीखें</li>
+                                <li>⏳ संज्ञानात्मक पुनर्गठन अभ्यास करें</li>
+                                <li>⏳ नींद डायरी रखना जारी रखें</li>
+                                <li>⏳ प्रगति का मूल्यांकन करें</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Chatbot Widget -->
+    <div id="chatbot-widget" class="chatbot-widget minimized">
+        <div class="chatbot-header">
+            <div class="chatbot-title">
+                <span class="chatbot-icon">🤖</span>
+                <span class="chatbot-name">नींद सहायक</span>
+            </div>
+            <div class="chatbot-controls">
+                <button class="chatbot-btn minimize-btn" onclick="minimizeChatbot()" title="छोटा करें">−</button>
+                <button class="chatbot-btn maximize-btn" onclick="maximizeChatbot()" title="बड़ा करें">□</button>
+                <button class="chatbot-btn close-btn" onclick="closeChatbot()" title="बंद करें">×</button>
+            </div>
+        </div>
+        
+        <div class="chatbot-body">
+            <div class="chatbot-messages" id="chatbot-messages">
+                <div class="chatbot-message bot-message">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <p>नमस्ते! मैं आपकी नींद से जुड़ी समस्याओं में मदद कर सकता हूं। आप क्या जानना चाहते हैं?</p>
+                        <div class="quick-questions">
+                            <button class="quick-btn" onclick="askQuickQuestion('नींद की गुणवत्ता कैसे सुधारें?')">नींद की गुणवत्ता कैसे सुधारें?</button>
+                            <button class="quick-btn" onclick="askQuickQuestion('CBT-I क्या है?')">CBT-I क्या है?</button>
+                            <button class="quick-btn" onclick="askQuickQuestion('अनिद्रा के लक्षण क्या हैं?')">अनिद्रा के लक्षण क्या हैं?</button>
+                            <button class="quick-btn" onclick="askQuickQuestion('डॉक्टर से कब मिलना चाहिए?')">डॉक्टर से कब मिलना चाहिए?</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chatbot-input">
+                <input type="text" id="chatbot-input-field" placeholder="अपना सवाल टाइप करें..." onkeypress="handleChatbotKeyPress(event)">
+                <button class="chatbot-send-btn" onclick="sendChatbotMessage()">📤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Toggle Button -->
+    <button id="chatbot-toggle" class="chatbot-toggle" onclick="toggleChatbot()" title="चैटबॉट खोलें">
+        <span class="chatbot-toggle-icon">💬</span>
+    </button>
+
+    <script src="script.js"></script>
+</body>
+</html>

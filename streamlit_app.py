@@ -2200,21 +2200,29 @@ def show_chatbot():
                 if st.button("🎤 वॉइस रिकॉर्डिंग शुरू करें", use_container_width=True, key="start_voice"):
                     st.info("🎤 वॉइस रिकॉर्डिंग शुरू! ब्राउज़र की अनुमति दें...")
                     
-                    # Add actual voice recording functionality
+                    # Create a simple HTML file with voice recording
                     st.markdown("""
-                    <div style="background: #d4edda; padding: 1rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #28a745;">
+                    <div style="background: #d4edda; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #28a745;">
                         <h5>🎤 वॉइस रिकॉर्डिंग चालू है</h5>
-                        <p>अब बोलें - आपकी आवाज नीचे दिखेगी</p>
-                        <div id="voice-status" style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 2px solid #28a745;">
-                            <p style="margin: 0; font-weight: bold; color: #155724;">🎤 सुन रहा हूं... बोलें</p>
+                        <p>नीचे दिए गए बटन पर क्लिक करें और ब्राउज़र की अनुमति दें:</p>
+                        
+                        <button onclick="startRecording()" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 25px; margin: 10px 0; cursor: pointer; font-size: 16px;">
+                            🎤 माइक्रोफोन अनुमति दें
+                        </button>
+                        
+                        <div id="status" style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 2px solid #28a745;">
+                            <p style="margin: 0; font-weight: bold; color: #155724;">क्लिक करें और बोलें</p>
+                        </div>
+                        
+                        <div id="transcript" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0; min-height: 60px; border: 1px solid #dee2e6;">
+                            <p style="margin: 0; color: #6c757d;">आपकी आवाज यहाँ दिखेगी...</p>
                         </div>
                     </div>
                     
                     <script>
                     let recognition;
-                    let isListening = false;
                     
-                    function startVoiceRecording() {
+                    function startRecording() {
                         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
                             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                             recognition = new SpeechRecognition();
@@ -2224,8 +2232,7 @@ def show_chatbot():
                             recognition.lang = 'hi-IN';
                             
                             recognition.onstart = function() {
-                                isListening = true;
-                                document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #155724;">🎤 सुन रहा हूं... बोलें</p>';
+                                document.getElementById('status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #155724;">🎤 सुन रहा हूं... बोलें</p>';
                             };
                             
                             recognition.onresult = function(event) {
@@ -2235,35 +2242,31 @@ def show_chatbot():
                                 }
                                 
                                 if (transcript.trim()) {
-                                    // Update the text area
+                                    document.getElementById('transcript').innerHTML = '<p style="margin: 0; color: #155724; font-weight: bold;">' + transcript + '</p>';
+                                    
+                                    // Update the Streamlit text area
                                     const textArea = document.querySelector('textarea[data-testid="stTextArea"]');
                                     if (textArea) {
                                         textArea.value = transcript;
                                         textArea.dispatchEvent(new Event('input', { bubbles: true }));
                                     }
-                                    
-                                    document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #28a745;">✅ आवाज कैप्चर हो गई: ' + transcript + '</p>';
                                 }
                             };
                             
                             recognition.onerror = function(event) {
-                                document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #dc3545;">❌ त्रुटि: ' + event.error + '</p>';
+                                document.getElementById('status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #dc3545;">❌ त्रुटि: ' + event.error + '</p>';
                             };
                             
                             recognition.onend = function() {
-                                isListening = false;
-                                document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #6c757d;">⏸️ रिकॉर्डिंग बंद</p>';
+                                document.getElementById('status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #6c757d;">⏸️ रिकॉर्डिंग बंद</p>';
                             };
                             
                             // Start recognition
                             recognition.start();
                         } else {
-                            document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #dc3545;">❌ आपका ब्राउज़र वॉइस रिकॉर्डिंग सपोर्ट नहीं करता</p>';
+                            document.getElementById('status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #dc3545;">❌ आपका ब्राउज़र वॉइस रिकॉर्डिंग सपोर्ट नहीं करता</p>';
                         }
                     }
-                    
-                    // Start voice recording immediately
-                    startVoiceRecording();
                     </script>
                     """, unsafe_allow_html=True)
             

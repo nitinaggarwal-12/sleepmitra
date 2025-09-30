@@ -2194,21 +2194,91 @@ def show_chatbot():
             )
             
             # Voice conversation buttons
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             
             with col1:
                 if st.button("🎤 वॉइस रिकॉर्डिंग शुरू करें", use_container_width=True, key="start_voice"):
                     st.info("🎤 वॉइस रिकॉर्डिंग शुरू! ब्राउज़र की अनुमति दें...")
+                    
+                    # Add actual voice recording functionality
                     st.markdown("""
-                    <div style="background: #fff3cd; padding: 1rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #ffc107;">
-                        <h5>🎤 वॉइस रिकॉर्डिंग के लिए:</h5>
-                        <p><strong>Chrome/Edge:</strong> टेक्स्ट बॉक्स में क्लिक करें → राइट-क्लिक → "Voice typing" चुनें</p>
-                        <p><strong>Mac:</strong> टेक्स्ट बॉक्स में क्लिक करें → Fn + माइक्रोफोन बटन</p>
-                        <p><strong>Windows:</strong> टेक्स्ट बॉक्स में क्लिक करें → Windows + H</p>
+                    <div style="background: #d4edda; padding: 1rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #28a745;">
+                        <h5>🎤 वॉइस रिकॉर्डिंग चालू है</h5>
+                        <p>अब बोलें - आपकी आवाज नीचे दिखेगी</p>
+                        <div id="voice-status" style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 2px solid #28a745;">
+                            <p style="margin: 0; font-weight: bold; color: #155724;">🎤 सुन रहा हूं... बोलें</p>
+                        </div>
                     </div>
+                    
+                    <script>
+                    let recognition;
+                    let isListening = false;
+                    
+                    function startVoiceRecording() {
+                        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                            recognition = new SpeechRecognition();
+                            
+                            recognition.continuous = true;
+                            recognition.interimResults = true;
+                            recognition.lang = 'hi-IN';
+                            
+                            recognition.onstart = function() {
+                                isListening = true;
+                                document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #155724;">🎤 सुन रहा हूं... बोलें</p>';
+                            };
+                            
+                            recognition.onresult = function(event) {
+                                let transcript = '';
+                                for (let i = event.resultIndex; i < event.results.length; i++) {
+                                    transcript += event.results[i][0].transcript;
+                                }
+                                
+                                if (transcript.trim()) {
+                                    // Update the text area
+                                    const textArea = document.querySelector('textarea[data-testid="stTextArea"]');
+                                    if (textArea) {
+                                        textArea.value = transcript;
+                                        textArea.dispatchEvent(new Event('input', { bubbles: true }));
+                                    }
+                                    
+                                    document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #28a745;">✅ आवाज कैप्चर हो गई: ' + transcript + '</p>';
+                                }
+                            };
+                            
+                            recognition.onerror = function(event) {
+                                document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #dc3545;">❌ त्रुटि: ' + event.error + '</p>';
+                            };
+                            
+                            recognition.onend = function() {
+                                isListening = false;
+                                document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #6c757d;">⏸️ रिकॉर्डिंग बंद</p>';
+                            };
+                            
+                            // Start recognition
+                            recognition.start();
+                        } else {
+                            document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #dc3545;">❌ आपका ब्राउज़र वॉइस रिकॉर्डिंग सपोर्ट नहीं करता</p>';
+                        }
+                    }
+                    
+                    // Start voice recording immediately
+                    startVoiceRecording();
+                    </script>
                     """, unsafe_allow_html=True)
             
             with col2:
+                if st.button("🔴 रिकॉर्डिंग बंद करें", use_container_width=True, key="stop_voice"):
+                    st.info("🔴 वॉइस रिकॉर्डिंग बंद हो गई")
+                    st.markdown("""
+                    <script>
+                    if (typeof recognition !== 'undefined' && recognition) {
+                        recognition.stop();
+                    }
+                    </script>
+                    """, unsafe_allow_html=True)
+            
+            with col3:
                 if st.button("🤖 AI से पूछें", use_container_width=True, key="ask_ai_voice"):
                     if voice_input.strip():
                         with st.spinner("🤖 AI जवाब दे रहा है..."):

@@ -2193,95 +2193,22 @@ def show_chatbot():
                 key="voice_input"
             )
             
+            # Simple voice interface
+            st.markdown("### 🎤 वॉइस इंटरफेस")
+            
+            # Voice typing instructions
+            st.info("""
+            **🎤 वॉइस टाइपिंग के लिए:**
+            - **Mac:** ऊपर दिए गए टेक्स्ट बॉक्स में क्लिक करें → Fn + माइक्रोफोन बटन (या Fn + F5)
+            - **Chrome/Edge:** टेक्स्ट बॉक्स में क्लिक करें → राइट-क्लिक → "Voice typing" चुनें
+            - **Windows:** टेक्स्ट बॉक्स में क्लिक करें → Windows + H
+            - **Mobile:** टेक्स्ट बॉक्स में क्लिक करें → माइक्रोफोन आइकन दबाएं
+            """)
+            
             # Voice conversation buttons
-            col1, col2, col3 = st.columns(3)
+            col1, col2 = st.columns(2)
             
             with col1:
-                if st.button("🎤 वॉइस रिकॉर्डिंग शुरू करें", use_container_width=True, key="start_voice"):
-                    st.info("🎤 वॉइस रिकॉर्डिंग शुरू! ब्राउज़र की अनुमति दें...")
-                    
-                    # Create a simple HTML file with voice recording
-                    st.markdown("""
-                    <div style="background: #d4edda; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #28a745;">
-                        <h5>🎤 वॉइस रिकॉर्डिंग चालू है</h5>
-                        <p>नीचे दिए गए बटन पर क्लिक करें और ब्राउज़र की अनुमति दें:</p>
-                        
-                        <button onclick="startRecording()" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 25px; margin: 10px 0; cursor: pointer; font-size: 16px;">
-                            🎤 माइक्रोफोन अनुमति दें
-                        </button>
-                        
-                        <div id="status" style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 2px solid #28a745;">
-                            <p style="margin: 0; font-weight: bold; color: #155724;">क्लिक करें और बोलें</p>
-                        </div>
-                        
-                        <div id="transcript" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0; min-height: 60px; border: 1px solid #dee2e6;">
-                            <p style="margin: 0; color: #6c757d;">आपकी आवाज यहाँ दिखेगी...</p>
-                        </div>
-                    </div>
-                    
-                    <script>
-                    let recognition;
-                    
-                    function startRecording() {
-                        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                            recognition = new SpeechRecognition();
-                            
-                            recognition.continuous = true;
-                            recognition.interimResults = true;
-                            recognition.lang = 'hi-IN';
-                            
-                            recognition.onstart = function() {
-                                document.getElementById('status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #155724;">🎤 सुन रहा हूं... बोलें</p>';
-                            };
-                            
-                            recognition.onresult = function(event) {
-                                let transcript = '';
-                                for (let i = event.resultIndex; i < event.results.length; i++) {
-                                    transcript += event.results[i][0].transcript;
-                                }
-                                
-                                if (transcript.trim()) {
-                                    document.getElementById('transcript').innerHTML = '<p style="margin: 0; color: #155724; font-weight: bold;">' + transcript + '</p>';
-                                    
-                                    // Update the Streamlit text area
-                                    const textArea = document.querySelector('textarea[data-testid="stTextArea"]');
-                                    if (textArea) {
-                                        textArea.value = transcript;
-                                        textArea.dispatchEvent(new Event('input', { bubbles: true }));
-                                    }
-                                }
-                            };
-                            
-                            recognition.onerror = function(event) {
-                                document.getElementById('status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #dc3545;">❌ त्रुटि: ' + event.error + '</p>';
-                            };
-                            
-                            recognition.onend = function() {
-                                document.getElementById('status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #6c757d;">⏸️ रिकॉर्डिंग बंद</p>';
-                            };
-                            
-                            // Start recognition
-                            recognition.start();
-                        } else {
-                            document.getElementById('status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #dc3545;">❌ आपका ब्राउज़र वॉइस रिकॉर्डिंग सपोर्ट नहीं करता</p>';
-                        }
-                    }
-                    </script>
-                    """, unsafe_allow_html=True)
-            
-            with col2:
-                if st.button("🔴 रिकॉर्डिंग बंद करें", use_container_width=True, key="stop_voice"):
-                    st.info("🔴 वॉइस रिकॉर्डिंग बंद हो गई")
-                    st.markdown("""
-                    <script>
-                    if (typeof recognition !== 'undefined' && recognition) {
-                        recognition.stop();
-                    }
-                    </script>
-                    """, unsafe_allow_html=True)
-            
-            with col3:
                 if st.button("🤖 AI से पूछें", use_container_width=True, key="ask_ai_voice"):
                     if voice_input.strip():
                         with st.spinner("🤖 AI जवाब दे रहा है..."):
@@ -2310,22 +2237,20 @@ def show_chatbot():
                                 """, unsafe_allow_html=True)
                             
                             # Voice output instructions
-                            st.markdown("""
-                            <div style="background: #f0f8ff; padding: 1rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #007bff;">
-                                <h5>🔊 AI का जवाब सुनने के लिए:</h5>
-                                <p><strong>Chrome/Edge:</strong> ऊपर दिए गए जवाब को सेलेक्ट करें → राइट-क्लिक → "Read aloud" चुनें</p>
-                                <p><strong>Mac:</strong> जवाब को सेलेक्ट करें → Cmd + Option + S</p>
-                                <p><strong>Windows:</strong> जवाब को सेलेक्ट करें → Ctrl + Shift + S</p>
-                            </div>
-                            """, unsafe_allow_html=True)
+                            st.info("""
+                            **🔊 AI का जवाब सुनने के लिए:**
+                            - **Mac:** ऊपर दिए गए जवाब को सेलेक्ट करें → Cmd + Option + S
+                            - **Chrome/Edge:** जवाब को सेलेक्ट करें → राइट-क्लिक → "Read aloud" चुनें
+                            - **Windows:** जवाब को सेलेक्ट करें → Ctrl + Shift + S
+                            """)
                     else:
                         st.warning("कृपया पहले अपना सवाल लिखें या बोलें")
             
-            # Clear conversation button
-            if st.button("🗑️ बातचीत साफ करें", use_container_width=True, key="clear_conversation"):
-                st.session_state.conversation_history = []
-                st.success("बातचीत साफ हो गई!")
-                st.rerun()
+            with col2:
+                if st.button("🗑️ बातचीत साफ करें", use_container_width=True, key="clear_conversation"):
+                    st.session_state.conversation_history = []
+                    st.success("बातचीत साफ हो गई!")
+                    st.rerun()
         else:
             st.markdown("""
             <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #6c757d;">

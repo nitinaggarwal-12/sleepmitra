@@ -2179,118 +2179,80 @@ def show_chatbot():
         
         # Voice mode interface
         if st.session_state.voice_mode:
-            st.markdown("""
-            <div style="background: #d4edda; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #28a745;">
-                <h4 style="color: #155724; margin: 0 0 1rem 0;">🎤 वॉइस मोड चालू है</h4>
-                <p style="color: #155724; margin: 0 0 1rem 0;">अब आप बोल सकते हैं और AI आपसे बात करेगा</p>
-                
-                <div id="voice-status" style="background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; border: 2px solid #28a745;">
-                    <p style="margin: 0; font-weight: bold; color: #155724;">🎤 सुन रहा हूं... बोलें</p>
-                </div>
-                
-                <div id="conversation" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0; min-height: 200px; border: 1px solid #dee2e6;">
-                    <p style="margin: 0; color: #6c757d;">यहाँ आपकी बातचीत दिखेगी...</p>
-                </div>
-            </div>
+            st.success("🎤 वॉइस मोड चालू है! अब आप बोल सकते हैं और AI आपसे बात करेगा")
             
-            <script>
-            let isListening = false;
-            let recognition;
-            let conversation = '';
+            # Initialize conversation history
+            if 'conversation_history' not in st.session_state:
+                st.session_state.conversation_history = []
             
-            // Initialize speech recognition
-            function initVoiceMode() {
-                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    recognition = new SpeechRecognition();
-                    
-                    recognition.continuous = true;
-                    recognition.interimResults = true;
-                    recognition.lang = 'hi-IN';
-                    
-                    recognition.onstart = function() {
-                        isListening = true;
-                        document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #155724;">🎤 सुन रहा हूं... बोलें</p>';
-                    };
-                    
-                    recognition.onresult = function(event) {
-                        let transcript = '';
-                        for (let i = event.resultIndex; i < event.results.length; i++) {
-                            transcript += event.results[i][0].transcript;
-                        }
-                        
-                        if (transcript.trim()) {
-                            conversation += '<div style="margin: 0.5rem 0; padding: 0.5rem; background: #e3f2fd; border-radius: 8px;"><strong>आप:</strong> ' + transcript + '</div>';
-                            document.getElementById('conversation').innerHTML = conversation;
+            # Voice input area
+            voice_input = st.text_area(
+                "🎤 अपना सवाल बोलें या लिखें:",
+                placeholder="यहाँ अपना सवाल लिखें या बोलें...",
+                height=100,
+                key="voice_input"
+            )
+            
+            # Voice conversation buttons
+            col1, col2 = st.columns(2)
+            
+            with col1:
+                if st.button("🎤 वॉइस रिकॉर्डिंग शुरू करें", use_container_width=True, key="start_voice"):
+                    st.info("🎤 वॉइस रिकॉर्डिंग शुरू! ब्राउज़र की अनुमति दें...")
+                    st.markdown("""
+                    <div style="background: #fff3cd; padding: 1rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #ffc107;">
+                        <h5>🎤 वॉइस रिकॉर्डिंग के लिए:</h5>
+                        <p><strong>Chrome/Edge:</strong> टेक्स्ट बॉक्स में क्लिक करें → राइट-क्लिक → "Voice typing" चुनें</p>
+                        <p><strong>Mac:</strong> टेक्स्ट बॉक्स में क्लिक करें → Fn + माइक्रोफोन बटन</p>
+                        <p><strong>Windows:</strong> टेक्स्ट बॉक्स में क्लिक करें → Windows + H</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            with col2:
+                if st.button("🤖 AI से पूछें", use_container_width=True, key="ask_ai_voice"):
+                    if voice_input.strip():
+                        with st.spinner("🤖 AI जवाब दे रहा है..."):
+                            ai_response = get_ai_response(voice_input)
                             
-                            // Get AI response
-                            getAIResponse(transcript);
-                        }
-                    };
-                    
-                    recognition.onerror = function(event) {
-                        document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #dc3545;">❌ त्रुटि: ' + event.error + '</p>';
-                    };
-                    
-                    recognition.onend = function() {
-                        isListening = false;
-                        document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #6c757d;">⏸️ रिकॉर्डिंग बंद</p>';
-                    };
-                    
-                    // Start listening
-                    recognition.start();
-                } else {
-                    document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #dc3545;">❌ आपका ब्राउज़र वॉइस रिकॉर्डिंग सपोर्ट नहीं करता</p>';
-                }
-            }
+                            # Add to conversation history
+                            st.session_state.conversation_history.append({
+                                'user': voice_input,
+                                'ai': ai_response,
+                                'timestamp': datetime.now().strftime("%H:%M")
+                            })
+                            
+                            # Display conversation
+                            st.markdown("### 💬 बातचीत")
+                            for msg in st.session_state.conversation_history[-5:]:  # Show last 5 messages
+                                st.markdown(f"""
+                                <div style="background: #e3f2fd; padding: 1rem; border-radius: 10px; margin: 0.5rem 0; border-left: 4px solid #2196f3;">
+                                    <strong>आप ({msg['timestamp']}):</strong> {msg['user']}
+                                </div>
+                                """, unsafe_allow_html=True)
+                                
+                                st.markdown(f"""
+                                <div style="background: #e8f5e8; padding: 1rem; border-radius: 10px; margin: 0.5rem 0; border-left: 4px solid #28a745;">
+                                    <strong>AI ({msg['timestamp']}):</strong> {msg['ai']}
+                                </div>
+                                """, unsafe_allow_html=True)
+                            
+                            # Voice output instructions
+                            st.markdown("""
+                            <div style="background: #f0f8ff; padding: 1rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #007bff;">
+                                <h5>🔊 AI का जवाब सुनने के लिए:</h5>
+                                <p><strong>Chrome/Edge:</strong> ऊपर दिए गए जवाब को सेलेक्ट करें → राइट-क्लिक → "Read aloud" चुनें</p>
+                                <p><strong>Mac:</strong> जवाब को सेलेक्ट करें → Cmd + Option + S</p>
+                                <p><strong>Windows:</strong> जवाब को सेलेक्ट करें → Ctrl + Shift + S</p>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    else:
+                        st.warning("कृपया पहले अपना सवाल लिखें या बोलें")
             
-            // Get AI response
-            function getAIResponse(userInput) {
-                document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #007bff;">🤖 AI जवाब दे रहा है...</p>';
-                
-                // Simulate AI response (you can replace this with actual API call)
-                setTimeout(() => {
-                    const aiResponse = 'बेटा, मैं आपकी बात समझ गई हूं। आपकी नींद की समस्या के लिए मैं यह सुझाव दूंगी: नियमित सोने का समय बनाएं, सोने से पहले स्क्रीन से दूर रहें, और रिलैक्सेशन तकनीक अपनाएं।';
-                    
-                    conversation += '<div style="margin: 0.5rem 0; padding: 0.5rem; background: #e8f5e8; border-radius: 8px;"><strong>AI:</strong> ' + aiResponse + '</div>';
-                    document.getElementById('conversation').innerHTML = conversation;
-                    
-                    // Speak the response
-                    speakText(aiResponse);
-                    
-                    // Resume listening
-                    setTimeout(() => {
-                        if (recognition && !isListening) {
-                            recognition.start();
-                        }
-                    }, 2000);
-                }, 1500);
-            }
-            
-            // Text-to-speech
-            function speakText(text) {
-                if ('speechSynthesis' in window) {
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = 'hi-IN';
-                    utterance.rate = 0.8;
-                    utterance.pitch = 1;
-                    
-                    utterance.onstart = function() {
-                        document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #28a745;">🔊 AI बोल रहा है...</p>';
-                    };
-                    
-                    utterance.onend = function() {
-                        document.getElementById('voice-status').innerHTML = '<p style="margin: 0; font-weight: bold; color: #155724;">🎤 सुन रहा हूं... बोलें</p>';
-                    };
-                    
-                    speechSynthesis.speak(utterance);
-                }
-            }
-            
-            // Start voice mode
-            initVoiceMode();
-            </script>
-            """, unsafe_allow_html=True)
+            # Clear conversation button
+            if st.button("🗑️ बातचीत साफ करें", use_container_width=True, key="clear_conversation"):
+                st.session_state.conversation_history = []
+                st.success("बातचीत साफ हो गई!")
+                st.rerun()
         else:
             st.markdown("""
             <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #6c757d;">

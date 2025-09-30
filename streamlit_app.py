@@ -2187,16 +2187,97 @@ def show_chatbot():
                     st.success("🎤 वॉइस रिकॉर्डिंग शुरू...")
                     st.info("💡 **नोट:** वॉइस रिकॉर्डिंग के लिए ब्राउज़र की अनुमति दें।")
                     
-                    # Show voice recording interface
+                    # Voice recording interface with JavaScript
                     st.markdown("""
                     <div style="text-align: center; padding: 1rem; background: #f0f8ff; border-radius: 10px; margin: 1rem 0;">
                         <h4>🎤 वॉइस रिकॉर्डिंग</h4>
-                        <p><strong>1.</strong> ब्राउज़र की अनुमति दें</p>
-                        <p><strong>2.</strong> अपना सवाल हिंदी में बोलें</p>
-                        <p><strong>3.</strong> ऊपर टेक्स्ट बॉक्स में टाइप करें</p>
-                        <p><strong>4.</strong> "AI से पूछें" बटन दबाएं</p>
-                        <p><strong>भाषा:</strong> हिंदी | <strong>AI:</strong> GPT-4</p>
+                        <button id="startRecord" onclick="startRecording()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 5px; cursor: pointer;">
+                            🎤 रिकॉर्डिंग शुरू करें
+                        </button>
+                        <button id="stopRecord" onclick="stopRecording()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 5px; cursor: pointer; display: none;">
+                            ⏹️ रिकॉर्डिंग रोकें
+                        </button>
+                        <div id="status" style="margin: 10px 0; font-weight: bold;"></div>
+                        <div id="transcript" style="background: white; padding: 10px; border-radius: 5px; margin: 10px 0; min-height: 50px; border: 1px solid #ddd;">
+                            आपकी आवाज यहाँ दिखेगी...
+                        </div>
+                        <button onclick="copyToTextArea()" style="background: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 5px; margin: 5px; cursor: pointer;">
+                            📝 टेक्स्ट बॉक्स में कॉपी करें
+                        </button>
                     </div>
+                    
+                    <script>
+                    let recognition;
+                    let isRecording = false;
+                    
+                    function startRecording() {
+                        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                            document.getElementById('status').innerHTML = '❌ आपका ब्राउज़र वॉइस रिकॉर्डिंग सपोर्ट नहीं करता';
+                            return;
+                        }
+                        
+                        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                        recognition = new SpeechRecognition();
+                        
+                        recognition.continuous = true;
+                        recognition.interimResults = true;
+                        recognition.lang = 'hi-IN'; // Hindi (India)
+                        
+                        recognition.onstart = function() {
+                            isRecording = true;
+                            document.getElementById('status').innerHTML = '🎤 रिकॉर्डिंग चल रही है... बोलें';
+                            document.getElementById('startRecord').style.display = 'none';
+                            document.getElementById('stopRecord').style.display = 'inline-block';
+                        };
+                        
+                        recognition.onresult = function(event) {
+                            let transcript = '';
+                            for (let i = event.resultIndex; i < event.results.length; i++) {
+                                transcript += event.results[i][0].transcript;
+                            }
+                            document.getElementById('transcript').innerHTML = transcript;
+                        };
+                        
+                        recognition.onerror = function(event) {
+                            document.getElementById('status').innerHTML = '❌ त्रुटि: ' + event.error;
+                            stopRecording();
+                        };
+                        
+                        recognition.onend = function() {
+                            stopRecording();
+                        };
+                        
+                        recognition.start();
+                    }
+                    
+                    function stopRecording() {
+                        if (recognition && isRecording) {
+                            recognition.stop();
+                            isRecording = false;
+                            document.getElementById('status').innerHTML = '✅ रिकॉर्डिंग पूर्ण';
+                            document.getElementById('startRecord').style.display = 'inline-block';
+                            document.getElementById('stopRecord').style.display = 'none';
+                        }
+                    }
+                    
+                    function copyToTextArea() {
+                        const transcript = document.getElementById('transcript').innerHTML;
+                        if (transcript && transcript !== 'आपकी आवाज यहाँ दिखेगी...') {
+                            // Find the text area and set its value
+                            const textAreas = document.querySelectorAll('textarea');
+                            for (let textarea of textAreas) {
+                                if (textarea.placeholder && textarea.placeholder.includes('नींद')) {
+                                    textarea.value = transcript;
+                                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                                    break;
+                                }
+                            }
+                            document.getElementById('status').innerHTML = '✅ टेक्स्ट बॉक्स में कॉपी हो गया!';
+                        } else {
+                            document.getElementById('status').innerHTML = '❌ पहले कुछ बोलें';
+                        }
+                    }
+                    </script>
                     """, unsafe_allow_html=True)
         
         # Quick question buttons

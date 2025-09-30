@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Voice Recorder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .button:hover {
+            background: #218838;
+        }
+        .button.stop {
+            background: #dc3545;
+        }
+        .button.stop:hover {
+            background: #c82333;
+        }
+        .status {
+            margin: 15px 0;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .transcript {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            min-height: 100px;
+            border: 1px solid #dee2e6;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        .copy-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .copy-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🎤 Voice Recorder</h2>
+        
+        <button id="startRecord" class="button" onclick="startRecording()">
+            🎤 Start Recording
+        </button>
+        
+        <button id="stopRecord" class="button stop" onclick="stopRecording()" style="display: none;">
+            ⏹️ Stop Recording
+        </button>
+        
+        <div id="status" class="status">Click "Start Recording" to begin</div>
+        
+        <div id="transcript" class="transcript">
+            Your speech will appear here...
+        </div>
+        
+        <button class="copy-button" onclick="copyTranscript()">
+            📝 Copy to Clipboard
+        </button>
+        
+        <button class="copy-button" onclick="clearTranscript()">
+            🗑️ Clear
+        </button>
+    </div>
+
+    <script>
+        let recognition;
+        let isRecording = false;
+        
+        function startRecording() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                document.getElementById('status').innerHTML = '❌ Your browser does not support voice recording';
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'hi-IN'; // Hindi (India)
+            
+            recognition.onstart = function() {
+                isRecording = true;
+                document.getElementById('status').innerHTML = '🎤 Recording... Speak now';
+                document.getElementById('startRecord').style.display = 'none';
+                document.getElementById('stopRecord').style.display = 'inline-block';
+            };
+            
+            recognition.onresult = function(event) {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                document.getElementById('transcript').innerHTML = transcript;
+            };
+            
+            recognition.onerror = function(event) {
+                document.getElementById('status').innerHTML = '❌ Error: ' + event.error;
+                stopRecording();
+            };
+            
+            recognition.onend = function() {
+                stopRecording();
+            };
+            
+            recognition.start();
+        }
+        
+        function stopRecording() {
+            if (recognition && isRecording) {
+                recognition.stop();
+                isRecording = false;
+                document.getElementById('status').innerHTML = '✅ Recording complete';
+                document.getElementById('startRecord').style.display = 'inline-block';
+                document.getElementById('stopRecord').style.display = 'none';
+            }
+        }
+        
+        function copyTranscript() {
+            const transcript = document.getElementById('transcript').innerHTML;
+            if (transcript && transcript !== 'Your speech will appear here...') {
+                navigator.clipboard.writeText(transcript).then(function() {
+                    document.getElementById('status').innerHTML = '✅ Copied to clipboard!';
+                });
+            } else {
+                document.getElementById('status').innerHTML = '❌ Nothing to copy';
+            }
+        }
+        
+        function clearTranscript() {
+            document.getElementById('transcript').innerHTML = 'Your speech will appear here...';
+            document.getElementById('status').innerHTML = 'Click "Start Recording" to begin';
+        }
+    </script>
+</body>
+</html>

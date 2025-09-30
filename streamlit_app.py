@@ -2154,89 +2154,45 @@ def show_chatbot():
         # AI Voice Assistant Form - Always visible
         st.markdown("**🎤 AI वॉइस असिस्टेंट**")
         
+        # Voice recording instructions - Always visible
+        st.markdown("""
+        <div style="background: #f0f8ff; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+            <h4>🎤 वॉइस रिकॉर्डिंग निर्देश:</h4>
+            <p><strong>विकल्प 1 - टेक्स्ट इनपुट:</strong></p>
+            <p>• नीचे दिए गए टेक्स्ट बॉक्स में अपना सवाल टाइप करें</p>
+            <p><strong>विकल्प 2 - वॉइस टाइपिंग:</strong></p>
+            <p>• <strong>Chrome/Edge:</strong> टेक्स्ट बॉक्स में राइट-क्लिक करें → "Voice typing" चुनें</p>
+            <p>• <strong>Mobile:</strong> टेक्स्ट बॉक्स पर टैप करें → माइक्रोफोन आइकन दबाएं</p>
+            <p>• <strong>Windows:</strong> Windows + H दबाकर वॉइस टाइपिंग शुरू करें</p>
+            <p>• <strong>Mac:</strong> Fn दबाकर माइक्रोफोन आइकन दबाएं</p>
+            <p><strong>भाषा:</strong> हिंदी | <strong>AI:</strong> GPT-4</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
         with st.form("ai_voice_form"):
             voice_text = st.text_area(
-                "आपकी नींद की समस्या या सवाल:",
+                "🎤 अपना सवाल बोलें (या टाइप करें):",
                 placeholder="उदाहरण: मुझे नींद नहीं आ रही, क्या करूं?",
                 height=100,
                 key="voice_text_input"
             )
             
-            col_submit1, col_submit2 = st.columns(2)
-            
-            with col_submit1:
-                if st.form_submit_button("🤖 AI से पूछें", use_container_width=True):
-                    if voice_text.strip():
-                        with st.spinner("🤖 AI आपके सवाल का जवाब दे रहा है..."):
-                            ai_response = get_ai_response(voice_text)
-                            
-                            # Display AI response
-                            st.markdown(f"""
-                            <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #28a745;">
-                                <h4 style="color: #28a745; margin: 0 0 1rem 0;">🤖 AI असिस्टेंट का जवाब:</h4>
-                                <div style="font-size: 1.1rem; line-height: 1.6; color: #333;">
-                                    {ai_response}
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
-                    else:
-                        st.warning("कृपया अपना सवाल लिखें।")
-            
-            with col_submit2:
-                if st.form_submit_button("🎤 वॉइस रिकॉर्ड", use_container_width=True):
-                    st.success("🎤 वॉइस रिकॉर्डिंग शुरू...")
-                    st.info("💡 **नोट:** वॉइस रिकॉर्डिंग के लिए ब्राउज़र की अनुमति दें।")
-                    
-                    # Voice recording interface using Streamlit components
-                    st.markdown("### 🎤 वॉइस रिकॉर्डिंग")
-                    
-                    # Create a simple voice input using st.text_input with a special key
-                    voice_input = st.text_input(
-                        "🎤 अपना सवाल बोलें (या टाइप करें):",
-                        placeholder="उदाहरण: मुझे नींद नहीं आ रही, क्या करूं?",
-                        key="voice_input_field"
-                    )
-                    
-                    # Voice recording instructions
-                    st.markdown("""
-                    <div style="background: #f0f8ff; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
-                        <h4>🎤 वॉइस रिकॉर्डिंग निर्देश:</h4>
-                        <p><strong>विकल्प 1 - टेक्स्ट इनपुट:</strong></p>
-                        <p>• ऊपर दिए गए टेक्स्ट बॉक्स में अपना सवाल टाइप करें</p>
-                        <p><strong>विकल्प 2 - वॉइस टाइपिंग:</strong></p>
-                        <p>• <strong>Chrome/Edge:</strong> टेक्स्ट बॉक्स में राइट-क्लिक करें → "Voice typing" चुनें</p>
-                        <p>• <strong>Mobile:</strong> टेक्स्ट बॉक्स पर टैप करें → माइक्रोफोन आइकन दबाएं</p>
-                        <p>• <strong>Windows:</strong> Windows + H दबाकर वॉइस टाइपिंग शुरू करें</p>
-                        <p>• <strong>Mac:</strong> Fn दबाकर माइक्रोफोन आइकन दबाएं</p>
-                        <p><strong>3.</strong> फिर "🤖 AI से पूछें" बटन दबाएं</p>
-                        <p><strong>भाषा:</strong> हिंदी | <strong>AI:</strong> GPT-4</p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # If voice input is provided, show it
-                    if voice_input:
+            if st.form_submit_button("🤖 AI से पूछें", use_container_width=True):
+                if voice_text.strip():
+                    with st.spinner("🤖 AI आपके सवाल का जवाब दे रहा है..."):
+                        ai_response = get_ai_response(voice_text)
+                        
+                        # Display AI response
                         st.markdown(f"""
-                        <div style="background: #e8f5e8; padding: 1rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #28a745;">
-                            <h5 style="color: #28a745; margin: 0 0 0.5rem 0;">🎤 आपका सवाल:</h5>
-                            <div style="font-size: 1rem; line-height: 1.5; color: #333;">
-                                {voice_input}
+                        <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #28a745;">
+                            <h4 style="color: #28a745; margin: 0 0 1rem 0;">🤖 AI असिस्टेंट का जवाब:</h4>
+                            <div style="font-size: 1.1rem; line-height: 1.6; color: #333;">
+                                {ai_response}
                             </div>
                         </div>
                         """, unsafe_allow_html=True)
-                        
-                        # Process the voice input with AI
-                        with st.spinner("🤖 AI आपके सवाल का जवाब दे रहा है..."):
-                            ai_response = get_ai_response(voice_input)
-                            
-                            # Display AI response
-                            st.markdown(f"""
-                            <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #28a745;">
-                                <h4 style="color: #28a745; margin: 0 0 1rem 0;">🤖 AI असिस्टेंट का जवाब:</h4>
-                                <div style="font-size: 1.1rem; line-height: 1.6; color: #333;">
-                                    {ai_response}
-                                </div>
-                            </div>
-                            """, unsafe_allow_html=True)
+                else:
+                    st.warning("कृपया अपना सवाल लिखें।")
         
         # Quick question buttons
         st.markdown("**⚡ त्वरित सवाल:**")

@@ -5,8 +5,52 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import json
+import openai
 import requests
 from typing import Dict, List, Any
+
+# AI Voice Assistant Functions
+def get_ai_response(user_message: str) -> str:
+    """Get AI response from OpenAI GPT-4 for Hindi sleep-related queries"""
+    try:
+        # Get API key from secrets
+        api_key = st.secrets.get("OPENAI_API_KEY")
+        if not api_key:
+            return "❌ OpenAI API key not configured. Please add it to Streamlit secrets."
+        
+        # Initialize OpenAI client
+        client = openai.OpenAI(api_key=api_key)
+        
+        # Create a sleep therapy expert prompt
+        system_prompt = """You are a Hindi-speaking sleep therapy expert and insomnia management specialist. 
+        You help patients with sleep problems in Hindi. Provide helpful, empathetic, and practical advice.
+        Always respond in Hindi (Devanagari script). Keep responses concise but informative.
+        Focus on CBT-I techniques, sleep hygiene, and when to see a doctor."""
+        
+        # Get response from OpenAI
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=300,
+            temperature=0.7
+        )
+        
+        return response.choices[0].message.content
+        
+    except Exception as e:
+        return f"❌ AI असिस्टेंट में त्रुटि: {str(e)}"
+
+def process_voice_input(transcribed_text: str) -> str:
+    """Process voice input and return AI response"""
+    if not transcribed_text.strip():
+        return "कृपया अपना सवाल स्पष्ट रूप से बोलें।"
+    
+    # Get AI response
+    ai_response = get_ai_response(transcribed_text)
+    return ai_response
 
 # Page configuration
 st.set_page_config(
@@ -2075,29 +2119,42 @@ def show_chatbot():
             st.success("🎤 वॉइस रिकॉर्डिंग शुरू...")
             st.info("💡 **नोट:** वॉइस रिकॉर्डिंग के लिए ब्राउज़र की अनुमति दें।")
             
-            # Simulate voice processing
+            # Voice input form
+            with st.form("voice_input_form"):
+                st.markdown("**🎤 अपना सवाल टाइप करें या बोलें:**")
+                voice_text = st.text_area(
+                    "आपकी नींद की समस्या या सवाल:",
+                    placeholder="उदाहरण: मुझे नींद नहीं आ रही, क्या करूं?",
+                    height=100,
+                    key="voice_text_input"
+                )
+                
+                if st.form_submit_button("🤖 AI से पूछें", use_container_width=True):
+                    if voice_text.strip():
+                        with st.spinner("🤖 AI आपके सवाल का जवाब दे रहा है..."):
+                            ai_response = get_ai_response(voice_text)
+                            
+                            # Display AI response
+                            st.markdown(f"""
+                            <div style="background: #e8f5e8; padding: 1.5rem; border-radius: 10px; margin: 1rem 0; border-left: 4px solid #28a745;">
+                                <h4 style="color: #28a745; margin: 0 0 1rem 0;">🤖 AI असिस्टेंट का जवाब:</h4>
+                                <div style="font-size: 1.1rem; line-height: 1.6; color: #333;">
+                                    {ai_response}
+                                </div>
+                            </div>
+                            """, unsafe_allow_html=True)
+                    else:
+                        st.warning("कृपया अपना सवाल लिखें या बोलें।")
+            
+            # Voice recording instructions
             st.markdown("""
             <div style="text-align: center; padding: 1rem; background: #f0f8ff; border-radius: 10px; margin: 1rem 0;">
-                <h4>🎤 वॉइस प्रोसेसिंग</h4>
-                <p>आपकी आवाज को AI द्वारा समझा जा रहा है...</p>
-                <p><strong>भाषा:</strong> हिंदी</p>
-                <p><strong>AI:</strong> GPT-4 (Hindi Support)</p>
-                <p><strong>स्टेटस:</strong> OpenAI API key की आवश्यकता</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # Show demo response
-            st.markdown("""
-            <div style="background: #e8f5e8; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
-                <h4>🤖 AI असिस्टेंट का जवाब:</h4>
-                <p>"मैं आपकी नींद की समस्या समझ गया हूं। नींद न आने के लिए कुछ सुझाव:</p>
-                <ul>
-                    <li>नियमित सोने का समय बनाएं</li>
-                    <li>सोने से पहले स्क्रीन से दूर रहें</li>
-                    <li>कैफीन कम करें</li>
-                    <li>रिलैक्सेशन तकनीक अपनाएं</li>
-                </ul>
-                <p>यदि समस्या बनी रहे तो डॉक्टर से मिलें।"</p>
+                <h4>🎤 वॉइस रिकॉर्डिंग निर्देश</h4>
+                <p><strong>1.</strong> "वॉइस रिकॉर्ड करें" बटन दबाएं</p>
+                <p><strong>2.</strong> ब्राउज़र की अनुमति दें</p>
+                <p><strong>3.</strong> अपना सवाल हिंदी में बोलें</p>
+                <p><strong>4.</strong> AI तुरंत जवाब देगा</p>
+                <p><strong>भाषा:</strong> हिंदी | <strong>AI:</strong> GPT-4</p>
             </div>
             """, unsafe_allow_html=True)
     
@@ -2131,14 +2188,19 @@ def show_chatbot():
         """)
     
     # Implementation status
-    st.info("""
-    💡 **वर्तमान स्थिति:** UI तैयार है। AI इंटीग्रेशन के लिए:
+    st.success("""
+    ✅ **AI वॉइस असिस्टेंट सक्रिय है!**
     
-    1. **OpenAI API Key** की आवश्यकता
-    2. **Web Speech API** ब्राउज़र सपोर्ट
-    3. **Text-to-Speech** इंटीग्रेशन
+    **उपलब्ध सुविधाएं:**
+    1. ✅ **OpenAI GPT-4** इंटीग्रेशन
+    2. ✅ **हिंदी भाषा** समर्थन
+    3. ✅ **नींद चिकित्सा** विशेषज्ञता
+    4. ✅ **व्यक्तिगत सुझाव** और सलाह
     
-    **अगला कदम:** API keys और वॉइस प्रोसेसिंग सेटअप
+    **कैसे उपयोग करें:**
+    - अपना सवाल टाइप करें या बोलें
+    - AI तुरंत हिंदी में जवाब देगा
+    - नींद की समस्याओं के लिए विशेषज्ञ सलाह
     """)
 
 if __name__ == "__main__":

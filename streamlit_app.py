@@ -13,19 +13,55 @@ from typing import Dict, List, Any
 def get_ai_response(user_message: str) -> str:
     """Get AI response from OpenAI GPT-4 for Hindi sleep-related queries"""
     try:
-        # Get API key from secrets
-        api_key = st.secrets.get("OPENAI_API_KEY")
+        # Get API key from secrets (try multiple methods)
+        api_key = None
+        
+        # Method 1: Direct access
+        try:
+            api_key = st.secrets["OPENAI_API_KEY"]
+        except:
+            pass
+        
+        # Method 2: Get method
         if not api_key:
-            return "❌ OpenAI API key not configured. Please add it to Streamlit secrets."
+            try:
+                api_key = st.secrets.get("OPENAI_API_KEY")
+            except:
+                pass
+        
+        # Method 3: Environment variable fallback
+        if not api_key:
+            import os
+            api_key = os.getenv("OPENAI_API_KEY")
+        
+        if not api_key:
+            # Debug information
+            debug_info = []
+            try:
+                debug_info.append(f"Secrets available: {list(st.secrets.keys())}")
+            except:
+                debug_info.append("No secrets available")
+            
+            try:
+                import os
+                env_keys = [k for k in os.environ.keys() if 'OPENAI' in k]
+                debug_info.append(f"Environment variables: {env_keys}")
+            except:
+                debug_info.append("No environment variables found")
+            
+            return f"❌ OpenAI API key not configured.\n\nDebug info:\n" + "\n".join(debug_info) + "\n\nPlease add OPENAI_API_KEY to Streamlit Cloud secrets."
         
         # Initialize OpenAI client
         client = openai.OpenAI(api_key=api_key)
         
         # Create a sleep therapy expert prompt
-        system_prompt = """You are a Hindi-speaking sleep therapy expert and insomnia management specialist. 
-        You help patients with sleep problems in Hindi. Provide helpful, empathetic, and practical advice.
+        system_prompt = """You are a female Hindi-speaking sleep therapy expert from North India. 
+        You help patients with sleep problems in Hindi. Speak like a caring, knowledgeable North Indian woman.
+        Use North Indian Hindi expressions, be warm and motherly in your tone.
         Always respond in Hindi (Devanagari script). Keep responses concise but informative.
-        Focus on CBT-I techniques, sleep hygiene, and when to see a doctor."""
+        Use phrases like "बेटा/बेटी", "अरे हां", "देखिए", "समझिए", "अच्छा".
+        Focus on CBT-I techniques, sleep hygiene, and when to see a doctor.
+        Be empathetic and use North Indian cultural references when appropriate."""
         
         # Get response from OpenAI
         response = client.chat.completions.create(

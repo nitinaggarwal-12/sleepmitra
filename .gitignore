@@ -30,6 +30,7 @@ venv.bak/
 
 # Streamlit
 .streamlit/
+secrets.toml
 
 # IDE
 .vscode/

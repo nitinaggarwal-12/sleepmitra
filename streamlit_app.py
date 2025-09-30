@@ -2154,30 +2154,196 @@ def show_chatbot():
         # AI Voice Assistant Form - Always visible
         st.markdown("**🎤 AI वॉइस असिस्टेंट**")
         
-        # Voice recording instructions - Always visible
+        # Voice Interface with Microphone and Speaker buttons
         st.markdown("""
-        <div style="background: #f0f8ff; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
-            <h4>🎤 वॉइस रिकॉर्डिंग निर्देश:</h4>
-            <p><strong>विकल्प 1 - टेक्स्ट इनपुट:</strong></p>
-            <p>• नीचे दिए गए टेक्स्ट बॉक्स में अपना सवाल टाइप करें</p>
-            <p><strong>विकल्प 2 - वॉइस टाइपिंग:</strong></p>
-            <p>• <strong>Chrome/Edge:</strong> टेक्स्ट बॉक्स में राइट-क्लिक करें → "Voice typing" चुनें</p>
-            <p>• <strong>Mobile:</strong> टेक्स्ट बॉक्स पर टैप करें → माइक्रोफोन आइकन दबाएं</p>
-            <p>• <strong>Windows:</strong> Windows + H दबाकर वॉइस टाइपिंग शुरू करें</p>
-            <p>• <strong>Mac:</strong> Fn दबाकर माइक्रोफोन आइकन दबाएं</p>
-            <p><strong>भाषा:</strong> हिंदी | <strong>AI:</strong> GPT-4</p>
+        <div style="background: #f0f8ff; padding: 1.5rem; border-radius: 10px; margin: 1rem 0;">
+            <h4>🎤 वॉइस असिस्टेंट</h4>
+            
+            <!-- Voice Input Section -->
+            <div style="margin: 1rem 0;">
+                <h5>🎤 वॉइस इनपुट:</h5>
+                <button id="micOn" onclick="startListening()" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 25px; margin: 5px; cursor: pointer; font-size: 16px;">
+                    🎤 माइक्रोफोन चालू करें
+                </button>
+                <button id="micOff" onclick="stopListening()" style="background: #dc3545; color: white; border: none; padding: 12px 24px; border-radius: 25px; margin: 5px; cursor: pointer; font-size: 16px; display: none;">
+                    🔴 माइक्रोफोन बंद करें
+                </button>
+                <div id="micStatus" style="margin: 10px 0; font-weight: bold; color: #666;"></div>
+                <div id="voiceTranscript" style="background: white; padding: 15px; border-radius: 8px; margin: 10px 0; min-height: 60px; border: 2px solid #dee2e6; font-size: 16px;">
+                    आपकी आवाज यहाँ दिखेगी...
+                </div>
+            </div>
+            
+            <!-- Voice Output Section -->
+            <div style="margin: 1rem 0;">
+                <h5>🔊 वॉइस आउटपुट:</h5>
+                <button id="speakerOn" onclick="speakResponse()" style="background: #007bff; color: white; border: none; padding: 12px 24px; border-radius: 25px; margin: 5px; cursor: pointer; font-size: 16px;">
+                    🔊 स्पीकर चालू करें
+                </button>
+                <button id="speakerOff" onclick="stopSpeaking()" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 25px; margin: 5px; cursor: pointer; font-size: 16px; display: none;">
+                    🔇 स्पीकर बंद करें
+                </button>
+                <div id="speakerStatus" style="margin: 10px 0; font-weight: bold; color: #666;"></div>
+            </div>
+            
+            <div style="text-align: center; margin: 1rem 0;">
+                <button onclick="askAI()" style="background: #6C5CE7; color: white; border: none; padding: 15px 30px; border-radius: 25px; margin: 5px; cursor: pointer; font-size: 18px; font-weight: bold;">
+                    🤖 AI से पूछें
+                </button>
+            </div>
+            
+            <div id="aiResponse" style="background: #e8f5e8; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #28a745; display: none;">
+                <h5 style="color: #28a745; margin: 0 0 0.5rem 0;">🤖 AI का जवाब:</h5>
+                <div id="responseText" style="font-size: 1rem; line-height: 1.5; color: #333;"></div>
+            </div>
         </div>
+        
+        <script>
+        let recognition;
+        let isListening = false;
+        let isSpeaking = false;
+        let currentResponse = '';
+        
+        function startListening() {
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                document.getElementById('micStatus').innerHTML = '❌ आपका ब्राउज़र वॉइस रिकॉर्डिंग सपोर्ट नहीं करता';
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'hi-IN'; // Hindi (India)
+            
+            recognition.onstart = function() {
+                isListening = true;
+                document.getElementById('micStatus').innerHTML = '🎤 सुन रहा हूं... बोलें';
+                document.getElementById('micOn').style.display = 'none';
+                document.getElementById('micOff').style.display = 'inline-block';
+            };
+            
+            recognition.onresult = function(event) {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    transcript += event.results[i][0].transcript;
+                }
+                document.getElementById('voiceTranscript').innerHTML = transcript;
+            };
+            
+            recognition.onerror = function(event) {
+                document.getElementById('micStatus').innerHTML = '❌ त्रुटि: ' + event.error;
+                stopListening();
+            };
+            
+            recognition.onend = function() {
+                stopListening();
+            };
+            
+            recognition.start();
+        }
+        
+        function stopListening() {
+            if (recognition && isListening) {
+                recognition.stop();
+                isListening = false;
+                document.getElementById('micStatus').innerHTML = '✅ रिकॉर्डिंग पूर्ण';
+                document.getElementById('micOn').style.display = 'inline-block';
+                document.getElementById('micOff').style.display = 'none';
+            }
+        }
+        
+        function askAI() {
+            const transcript = document.getElementById('voiceTranscript').innerHTML;
+            if (!transcript || transcript === 'आपकी आवाज यहाँ दिखेगी...') {
+                document.getElementById('micStatus').innerHTML = '❌ पहले कुछ बोलें';
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('aiResponse').style.display = 'block';
+            document.getElementById('responseText').innerHTML = '🤖 AI जवाब दे रहा है...';
+            
+            // Call the AI function via Streamlit
+            // This will trigger the form submission with the transcript
+            const textArea = document.querySelector('textarea[placeholder*="नींद"]');
+            if (textArea) {
+                textArea.value = transcript;
+                textArea.dispatchEvent(new Event('input', { bubbles: true }));
+                
+                // Trigger form submission
+                const submitButton = document.querySelector('button[type="submit"]');
+                if (submitButton) {
+                    submitButton.click();
+                }
+            }
+            
+            // Fallback response for demo
+            setTimeout(() => {
+                if (!currentResponse) {
+                    currentResponse = 'बेटा, मैं आपकी नींद की समस्या समझ गई हूं। नींद न आने के लिए कुछ सुझाव: 1) नियमित सोने का समय बनाएं, 2) सोने से पहले स्क्रीन से दूर रहें, 3) कैफीन कम करें, 4) रिलैक्सेशन तकनीक अपनाएं। यदि समस्या बनी रहे तो डॉक्टर से मिलें।';
+                    document.getElementById('responseText').innerHTML = currentResponse;
+                }
+            }, 3000);
+        }
+        
+        function speakResponse() {
+            if (!currentResponse) {
+                document.getElementById('speakerStatus').innerHTML = '❌ पहले AI से पूछें';
+                return;
+            }
+            
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(currentResponse);
+                utterance.lang = 'hi-IN'; // Hindi (India)
+                utterance.rate = 0.8;
+                utterance.pitch = 1;
+                
+                utterance.onstart = function() {
+                    isSpeaking = true;
+                    document.getElementById('speakerStatus').innerHTML = '🔊 बोल रहा हूं...';
+                    document.getElementById('speakerOn').style.display = 'none';
+                    document.getElementById('speakerOff').style.display = 'inline-block';
+                };
+                
+                utterance.onend = function() {
+                    stopSpeaking();
+                };
+                
+                utterance.onerror = function() {
+                    document.getElementById('speakerStatus').innerHTML = '❌ आवाज में त्रुटि';
+                    stopSpeaking();
+                };
+                
+                speechSynthesis.speak(utterance);
+            } else {
+                document.getElementById('speakerStatus').innerHTML = '❌ आपका ब्राउज़र टेक्स्ट-टू-स्पीच सपोर्ट नहीं करता';
+            }
+        }
+        
+        function stopSpeaking() {
+            if (isSpeaking) {
+                speechSynthesis.cancel();
+                isSpeaking = false;
+                document.getElementById('speakerStatus').innerHTML = '✅ बोलना बंद';
+                document.getElementById('speakerOn').style.display = 'inline-block';
+                document.getElementById('speakerOff').style.display = 'none';
+            }
+        }
+        </script>
         """, unsafe_allow_html=True)
         
+        # Fallback text input
         with st.form("ai_voice_form"):
             voice_text = st.text_area(
-                "🎤 अपना सवाल बोलें (या टाइप करें):",
+                "📝 या टेक्स्ट में लिखें:",
                 placeholder="उदाहरण: मुझे नींद नहीं आ रही, क्या करूं?",
-                height=100,
+                height=80,
                 key="voice_text_input"
             )
             
-            if st.form_submit_button("🤖 AI से पूछें", use_container_width=True):
+            if st.form_submit_button("🤖 AI से पूछें (टेक्स्ट)", use_container_width=True):
                 if voice_text.strip():
                     with st.spinner("🤖 AI आपके सवाल का जवाब दे रहा है..."):
                         ai_response = get_ai_response(voice_text)

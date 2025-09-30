@@ -2115,20 +2115,20 @@ def show_chatbot():
         """, unsafe_allow_html=True)
     
     with col2:
-        if st.button("🎤 वॉइस रिकॉर्ड करें", use_container_width=True, key="voice_record"):
-            st.success("🎤 वॉइस रिकॉर्डिंग शुरू...")
-            st.info("💡 **नोट:** वॉइस रिकॉर्डिंग के लिए ब्राउज़र की अनुमति दें।")
+        # AI Voice Assistant Form - Always visible
+        st.markdown("**🎤 AI वॉइस असिस्टेंट**")
+        
+        with st.form("ai_voice_form"):
+            voice_text = st.text_area(
+                "आपकी नींद की समस्या या सवाल:",
+                placeholder="उदाहरण: मुझे नींद नहीं आ रही, क्या करूं?",
+                height=100,
+                key="voice_text_input"
+            )
             
-            # Voice input form
-            with st.form("voice_input_form"):
-                st.markdown("**🎤 अपना सवाल टाइप करें या बोलें:**")
-                voice_text = st.text_area(
-                    "आपकी नींद की समस्या या सवाल:",
-                    placeholder="उदाहरण: मुझे नींद नहीं आ रही, क्या करूं?",
-                    height=100,
-                    key="voice_text_input"
-                )
-                
+            col_submit1, col_submit2 = st.columns(2)
+            
+            with col_submit1:
                 if st.form_submit_button("🤖 AI से पूछें", use_container_width=True):
                     if voice_text.strip():
                         with st.spinner("🤖 AI आपके सवाल का जवाब दे रहा है..."):
@@ -2144,19 +2144,54 @@ def show_chatbot():
                             </div>
                             """, unsafe_allow_html=True)
                     else:
-                        st.warning("कृपया अपना सवाल लिखें या बोलें।")
+                        st.warning("कृपया अपना सवाल लिखें।")
             
-            # Voice recording instructions
-            st.markdown("""
-            <div style="text-align: center; padding: 1rem; background: #f0f8ff; border-radius: 10px; margin: 1rem 0;">
-                <h4>🎤 वॉइस रिकॉर्डिंग निर्देश</h4>
-                <p><strong>1.</strong> "वॉइस रिकॉर्ड करें" बटन दबाएं</p>
-                <p><strong>2.</strong> ब्राउज़र की अनुमति दें</p>
-                <p><strong>3.</strong> अपना सवाल हिंदी में बोलें</p>
-                <p><strong>4.</strong> AI तुरंत जवाब देगा</p>
-                <p><strong>भाषा:</strong> हिंदी | <strong>AI:</strong> GPT-4</p>
-            </div>
-            """, unsafe_allow_html=True)
+            with col_submit2:
+                if st.form_submit_button("🎤 वॉइस रिकॉर्ड", use_container_width=True):
+                    st.success("🎤 वॉइस रिकॉर्डिंग शुरू...")
+                    st.info("💡 **नोट:** वॉइस रिकॉर्डिंग के लिए ब्राउज़र की अनुमति दें।")
+                    
+                    # Show voice recording interface
+                    st.markdown("""
+                    <div style="text-align: center; padding: 1rem; background: #f0f8ff; border-radius: 10px; margin: 1rem 0;">
+                        <h4>🎤 वॉइस रिकॉर्डिंग</h4>
+                        <p><strong>1.</strong> ब्राउज़र की अनुमति दें</p>
+                        <p><strong>2.</strong> अपना सवाल हिंदी में बोलें</p>
+                        <p><strong>3.</strong> ऊपर टेक्स्ट बॉक्स में टाइप करें</p>
+                        <p><strong>4.</strong> "AI से पूछें" बटन दबाएं</p>
+                        <p><strong>भाषा:</strong> हिंदी | <strong>AI:</strong> GPT-4</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+        
+        # Quick question buttons
+        st.markdown("**⚡ त्वरित सवाल:**")
+        col_q1, col_q2 = st.columns(2)
+        
+        with col_q1:
+            if st.button("😴 नींद नहीं आ रही", use_container_width=True, key="quick_q1"):
+                with st.spinner("🤖 AI जवाब दे रहा है..."):
+                    ai_response = get_ai_response("मुझे नींद नहीं आ रही, क्या करूं?")
+                    st.markdown(f"""
+                    <div style="background: #e8f5e8; padding: 1rem; border-radius: 10px; margin: 0.5rem 0; border-left: 4px solid #28a745;">
+                        <h5 style="color: #28a745; margin: 0 0 0.5rem 0;">🤖 AI का जवाब:</h5>
+                        <div style="font-size: 0.9rem; line-height: 1.5; color: #333;">
+                            {ai_response}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
+        
+        with col_q2:
+            if st.button("🧠 CBT-I क्या है?", use_container_width=True, key="quick_q2"):
+                with st.spinner("🤖 AI जवाब दे रहा है..."):
+                    ai_response = get_ai_response("CBT-I थेरेपी क्या है?")
+                    st.markdown(f"""
+                    <div style="background: #e8f5e8; padding: 1rem; border-radius: 10px; margin: 0.5rem 0; border-left: 4px solid #28a745;">
+                        <h5 style="color: #28a745; margin: 0 0 0.5rem 0;">🤖 AI का जवाब:</h5>
+                        <div style="font-size: 0.9rem; line-height: 1.5; color: #333;">
+                            {ai_response}
+                        </div>
+                    </div>
+                    """, unsafe_allow_html=True)
     
     # AI Integration Info
     st.markdown("---")
